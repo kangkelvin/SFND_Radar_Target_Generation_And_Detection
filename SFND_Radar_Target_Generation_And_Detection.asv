@@ -21,8 +21,8 @@ TchirpAllowance = 5.5;
 % *%TODO* :
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
-targetPosInit = 50;
-targetVel = 20;
+targetPos = 150;
+targetVel = 50;
 
 
 %% FMCW Waveform Generation
@@ -43,10 +43,10 @@ fc= 77e9;             %carrier freq
                                                           
 %The number of chirps in one sequence. Its ideal to have 2^ value for the ease of running the FFT
 %for Doppler Estimation. 
-Nd=128;                   % 128 #of doppler cells OR #of sent periods % number of chirps
+Nd=8;                   % 128 #of doppler cells OR #of sent periods % number of chirps
 
 %The number of samples on each chirp. 
-Nr=1024;                  % 1024 for length of time OR # of range cells
+Nr=64;                  % 1024 for length of time OR # of range cells
 
 % Timestamp for running the displacement scenario for every sample on each
 % chirp
@@ -62,6 +62,7 @@ Mix = zeros(1,length(t)); %beat signal
 r_t=zeros(1,length(t));
 td=zeros(1,length(t));
 
+
 %% Signal generation and Moving Target simulation
 % Running the radar scenario over the time. 
 
@@ -70,7 +71,7 @@ for i=1:length(t)
     
     % *%TODO* :
     %For each time stamp update the Range of the Target for constant velocity.
-    targetPos = targetPosInit + targetVel * t(i);
+    targetPos = targetPos + targetVel * t(i);
     
     % *%TODO* :
     %For each time sample we need update the transmitted and
@@ -94,17 +95,27 @@ end
 %reshape the vector into Nr*Nd array. Nr and Nd here would also define the size of
 %Range and Doppler FFT respectively.
 Mix = reshape(Mix,[Nr,Nd]);
+disp(Mix);
+disp(size(Mix));
 
  % *%TODO* :
 %run the FFT on the beat signal along the range bins dimension (Nr) and
 %normalize.
-
+Y = fft(Mix);
+disp(Y);
+disp(size(Y));
+L = size(t);
+L = L(2);
+disp(L);
  % *%TODO* :
 % Take the absolute value of FFT output
+P2 = abs(Y);
+disp(
 
  % *%TODO* :
 % Output of FFT is double sided signal, but we are interested in only one side of the spectrum.
 % Hence we throw out half of the samples.
+P1 = P2(1:Nr/2+1);
 
 %plotting the range
 figure ('Name','Range from First FFT')
@@ -112,6 +123,8 @@ subplot(2,1,1)
 
  % *%TODO* :
  % plot FFT output 
+f = fc*(0:(Nr/2))/Nr;
+plot(f,P1) 
  
 axis ([0 200 0 1]);
 
