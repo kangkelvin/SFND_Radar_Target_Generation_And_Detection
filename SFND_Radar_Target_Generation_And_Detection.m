@@ -22,7 +22,7 @@ TchirpAllowance = 5.5;
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
 targetPos = 150;
-targerVel = 50;
+targetVel = 50;
 
 
 %% FMCW Waveform Generation
@@ -33,9 +33,9 @@ targerVel = 50;
 % chirp using the requirements above.
 Bsweep = c / (2 * rangeRes);
 Tchirp = TchirpAllowance * 2 * maxRange / c;
-sweepSlope = Bsweep / Tchirp;
+slope = Bsweep / Tchirp;
 
-disp(sweepSlope);
+disp(slope);
 
 %Operating carrier frequency of Radar 
 fc= 77e9;             %carrier freq
@@ -70,19 +70,21 @@ for i=1:length(t)
     
     
     % *%TODO* :
-    %For each time stamp update the Range of the Target for constant velocity. 
+    %For each time stamp update the Range of the Target for constant velocity.
+    targetPos = targetPos + targetVel * t(i);
     
     % *%TODO* :
     %For each time sample we need update the transmitted and
-    %received signal. 
-    Tx(i) = 0;
-    Rx (i)  = 0;
+    %received signal.
+    td(i) = targetPos * 2 / c;
+    Tx(i) = cos(2*pi*(fc*t(i)+slope/2*t(i).^2));
+    Rx(i)  = cos(2*pi*(fc*(t(i)-td(i))+slope/2*(t(i)-td(i)).^2));
     
     % *%TODO* :
     %Now by mixing the Transmit and Receive generate the beat signal
     %This is done by element wise matrix multiplication of Transmit and
     %Receiver Signal
-    Mix(i) = 0;
+    Mix(i) = Tx(i).*Rx(i);
     
 end
 
