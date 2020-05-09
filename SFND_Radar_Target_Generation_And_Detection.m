@@ -21,7 +21,7 @@ TchirpAllowance = 5.5;
 % *%TODO* :
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
-targetPosInit = 50;
+targetPosInit = 150;
 targetVel = 20;
 
 
@@ -98,20 +98,24 @@ Mix = reshape(Mix,[Nr,Nd]);
  % *%TODO* :
 %run the FFT on the beat signal along the range bins dimension (Nr) and
 %normalize.
+fft_range = fft(Mix, Nr, 1) ./ Nr;
 
  % *%TODO* :
 % Take the absolute value of FFT output
+P2 = abs(fft_range);
 
  % *%TODO* :
 % Output of FFT is double sided signal, but we are interested in only one side of the spectrum.
 % Hence we throw out half of the samples.
+P1 = P2(1:Nr/2+1);
 
 %plotting the range
 figure ('Name','Range from First FFT')
 subplot(2,1,1)
 
  % *%TODO* :
- % plot FFT output 
+ % plot FFT output
+ plot(P1);
  
 axis ([0 200 0 1]);
 
