@@ -12,5 +12,7 @@ The raw RDM plot shows that the StDev of the velocity signal is a lot higher tha
 Since the range signal is narrow, a small training cells of 4 and guard cells of 2 is selected. While for velocity, a larger training cells of 8 and guard cells of 4 are chosen.
 Although increasing the training and guard cells of the velocity will make the noise threshold better, it will reduce the range of velocity that we can detect due to the padding at the outer cols of the matrix
 
+Offset is selected to clear the random noise generated, but not too high such that it is near the peaks of the real signal
+
 #### Steps taken to suppress the non-thresholded cells at the edges
 non-threshold cells at the edges are made to be zero by initialising the filteredRDM to be matrix of zeros with size(RDM)
