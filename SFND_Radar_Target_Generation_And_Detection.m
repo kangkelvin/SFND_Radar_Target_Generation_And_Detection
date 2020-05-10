@@ -169,7 +169,7 @@ Tvel = 8;
 %Select the number of Guard Cells in both dimensions around the Cell under 
 %test (CUT) for accurate estimation
 Grange = 2;
-Gvel = 8;
+Gvel = 4;
 
 % *%TODO* :
 % offset the threshold by SNR value in dB
