@@ -21,8 +21,8 @@ TchirpAllowance = 5.5;
 % *%TODO* :
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
-targetPosInit = [150, 100];
-targetVel = [20, -20];
+targetPosInit = [150];
+targetVel = [20];
 
 
 %% FMCW Waveform Generation
