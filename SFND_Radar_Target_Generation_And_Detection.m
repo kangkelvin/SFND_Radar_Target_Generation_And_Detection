@@ -21,8 +21,8 @@ TchirpAllowance = 5.5;
 % *%TODO* :
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
-targetPosInit = 150;
-targetVel = 20;
+targetPosInit = [150, 100];
+targetVel = [20, -20];
 
 
 %% FMCW Waveform Generation
@@ -70,14 +70,17 @@ for i=1:length(t)
     
     % *%TODO* :
     %For each time stamp update the Range of the Target for constant velocity.
-    targetPos = targetPosInit + targetVel * t(i);
+    for j=1:length(targetPosInit)
+        targetPos = targetPosInit(j) + targetVel(j) * t(i);
     
-    % *%TODO* :
-    %For each time sample we need update the transmitted and
-    %received signal.
-    td(i) = targetPos * 2 / c;
-    Tx(i) = cos(2*pi*(fc*t(i)+slope/2*t(i).^2));
-    Rx(i) = cos(2*pi*(fc*(t(i)-td(i))+slope/2*(t(i)-td(i)).^2));
+        % *%TODO* :
+        %For each time sample we need update the transmitted and
+        %received signal.
+        td(i) = targetPos * 2 / c;
+        Tx(i) = Tx(i) + cos(2*pi*(fc*t(i)+slope/2*t(i).^2));
+        Rx(i) = Rx(i) + cos(2*pi*(fc*(t(i)-td(i))+slope/2*(t(i)-td(i)).^2));
+    end
+    
     
     % *%TODO* :
     %Now by mixing the Transmit and Receive generate the beat signal
@@ -89,6 +92,8 @@ end
 
 %% RANGE MEASUREMENT
 
+% added random noise
+Mix = Mix + 2*randn(size(Mix));
 
  % *%TODO* :
 %reshape the vector into Nr*Nd array. Nr and Nd here would also define the size of
@@ -157,17 +162,23 @@ figure,surf(doppler_axis,range_axis,RDM);
 
 % *%TODO* :
 %Select the number of Training Cells in both the dimensions.
+Trange = 4;
+Tvel = 8;
 
 % *%TODO* :
 %Select the number of Guard Cells in both dimensions around the Cell under 
 %test (CUT) for accurate estimation
+Grange = 2;
+Gvel = 8;
 
 % *%TODO* :
 % offset the threshold by SNR value in dB
+offset = 10;
 
 % *%TODO* :
 %Create a vector to store noise_level for each iteration on training cells
-noise_level = zeros(1,1);
+RDMsize = size(RDM);
+noise_level = zeros(RDMsize(1),RDMsize(2));
 
 
 % *%TODO* :
@@ -185,9 +196,33 @@ noise_level = zeros(1,1);
    % Use RDM[x,y] as the matrix from the output of 2D FFT for implementing
    % CFAR
 
+filteredRDM = zeros(RDMsize);
 
+noOfTrainCell = (2*(Tvel+Gvel)+1)*(2*(Trange+Grange)+1) - (2*(Gvel)+1)*(2*(Grange)+1);
 
-
+for i=Trange+Grange+1:RDMsize(1)-Trange-Grange
+    for j=Tvel+Gvel+1:RDMsize(2)-Tvel-Gvel
+        signal= RDM(i,j);
+        for row=i-Trange-Grange:i+Trange+Grange
+            for col=j-Tvel-Gvel:j+Tvel+Gvel
+                if not(row >= i-Grange && row <= i+Grange && col >= j-Gvel && col <= j+Gvel)
+                    noise_level(i,j) = noise_level(i,j) + db2pow(RDM(row,col));
+                end
+            end
+        end
+%         for row=i-Grange:i+Grange
+%             for col=j-Gvel:j+Gvel
+%                 noise_level(i,j) = noise_level(i,j) - db2pow(RDM(row,col));
+%             end
+%         end
+        noise_level(i,j) = pow2db(noise_level(i,j)/noOfTrainCell)+offset;
+        if signal > noise_level(i,j)
+            filteredRDM(i,j) = 1;
+        else
+            filteredRDM(i,j) = 0;
+        end
+    end
+end
 
 % *%TODO* :
 % The process above will generate a thresholded block, which is smaller 
@@ -195,7 +230,7 @@ noise_level = zeros(1,1);
 %matrix. Hence,few cells will not be thresholded. To keep the map size same
 % set those values to 0. 
  
-
+% noise_level outer regions are already set to zero when declaring matrix
 
 
 
@@ -206,7 +241,8 @@ noise_level = zeros(1,1);
 % *%TODO* :
 %display the CFAR output using the Surf function like we did for Range
 %Doppler Response output.
-figure,surf(doppler_axis,range_axis,'replace this with output');
+figure,surf(doppler_axis,range_axis,noise_level);
+figure,surf(doppler_axis,range_axis,filteredRDM);
 colorbar;
 
 
